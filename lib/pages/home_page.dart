@@ -209,7 +209,7 @@ class _HomePageState extends State<HomePage> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
               onPressed: _addExpenseContainer,
-              child: Text("Add Expense", style: TextStyle(color: Colors.white),),
+              child: Text("Add Expenses", style: TextStyle(color: Colors.white),),
             ),
           ),
         ],
