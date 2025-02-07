@@ -2,21 +2,11 @@ import 'package:finvest/components/whitespace.dart';
 import 'package:finvest/components/custom_appbar.dart';
 import 'package:finvest/components/piechart.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
-  final String finalcategoryname;
-  final String finalexpensename;
-  final double finalexpense;
-  final double finalmonthly;
-  final double finaltotal;
-
-  const HomePage(
-      {super.key,
-      required this.finalmonthly,
-      required this.finaltotal,
-      required this.finalcategoryname,
-      required this.finalexpense,
-      required this.finalexpensename});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -24,12 +14,88 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Map<String, double> expenseData = {};
+  double totalExpenses = 0.0;
+  double monthlyBudget = 30000.0;
 
-  void updateExpenseData(String category, double amount) {
-    setState(() {
-      expenseData.update(category, (value) => value + amount,
-          ifAbsent: () => amount);
-    });
+  void fetchSummary() async {
+    final url = Uri.parse("http://localhost:5002/summary");
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        totalExpenses = data['total_spent'];
+        expenseData = Map<String, double>.from(data['expenses_by_category']);
+      });
+    } else {
+      print("Error fetching summary: \${response.body}");
+    }
+  }
+
+  Future<void> _addExpenseContainer() async {
+    TextEditingController nameController = TextEditingController();
+    TextEditingController categoryController = TextEditingController();
+    TextEditingController amountController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Add Expense"),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(labelText: "Expense Name"),
+                ),
+                TextField(
+                  controller: categoryController,
+                  decoration: InputDecoration(labelText: "Category"),
+                ),
+                TextField(
+                  controller: amountController,
+                  decoration: InputDecoration(labelText: "Amount"),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                final url = Uri.parse("http://10.0.2.2:5002/add-expense");
+                final response = await http.post(
+                  url,
+                  headers: {"Content-Type": "application/json"},
+                  body: jsonEncode({
+                    "name": nameController.text,
+                    "category": categoryController.text,
+                    "amount": double.tryParse(amountController.text) ?? 0.0,
+                  }),
+                );
+                if (response.statusCode == 201) {
+                  fetchSummary();
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSummary();
   }
 
   @override
@@ -40,23 +106,28 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           const SizedBox(height: 20),
-          Piechart(
-            expenseData: {
-              "Food": 500.0,
-              "Transport": 300.0,
-              "Shopping": 700.0,
-              "Bills": 400.0,
-            },
+          Expanded(
+            child: PieChartWidget(expenseData: expenseData,monthlyBudget: monthlyBudget, totalExpenses: totalExpenses,),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 30, left: 30, right: 30),
+              child: Whitespace(
+                finalcategoryname: "",
+                finalexpense: 0.0,
+                finalexpensename: "",
+                text: 'Recent Expenses',
+                monthlybudget: monthlyBudget,
+                totalexpenses: totalExpenses,
+              ),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 30, left: 30, right: 30),
-            child: Whitespace(
-              finalcategoryname: widget.finalcategoryname,
-              finalexpense: widget.finalexpense,
-              finalexpensename: widget.finalexpensename,
-              text: 'Recent Expenses',
-              monthlybudget: widget.finalmonthly,
-              totalexpenses: widget.finaltotal,
+            padding: const EdgeInsets.only(bottom: 20),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+              onPressed: _addExpenseContainer,
+              child: Text("Add Expense", style: TextStyle(color: Colors.white),),
             ),
           ),
         ],

@@ -13,14 +13,8 @@ class _CustomNavBarState extends State<CustomNavBar> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    HomePage(
-      finalcategoryname: 'Health and Wellness',
-      finalexpense: 500,
-      finalexpensename: 'Netflix',
-      finalmonthly: 500,
-      finaltotal: 500,
-    ),
-    Askfinvest(),
+    HomePage(),
+    AskFinvestChatbot(),
     Stocks(),
     Wallet(
       totalbalance: 100000,
