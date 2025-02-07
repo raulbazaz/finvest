@@ -16,6 +16,19 @@ class _HomePageState extends State<HomePage> {
   Map<String, double> expenseData = {};
   double totalExpenses = 0.0;
   double monthlyBudget = 30000.0;
+  String selectedCategory = 'Housing';
+
+  final List<String> expenseCategories = [
+    'Housing',
+    'Shopping',
+    'Food and Dining',
+    'Transportation',
+    'Loans and Insurance',
+    'Health and Wellness',
+    'Education',
+    'Entertainment',
+    'Miscellaneous',
+  ];
 
   void fetchSummary() async {
     final url = Uri.parse("http://localhost:5002/summary");
@@ -34,7 +47,6 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _addExpenseContainer() async {
     TextEditingController nameController = TextEditingController();
-    TextEditingController categoryController = TextEditingController();
     TextEditingController amountController = TextEditingController();
 
     await showDialog(
@@ -50,8 +62,19 @@ class _HomePageState extends State<HomePage> {
                   controller: nameController,
                   decoration: InputDecoration(labelText: "Expense Name"),
                 ),
-                TextField(
-                  controller: categoryController,
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  items: expenseCategories.map((category) {
+                    return DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedCategory = value!;
+                    });
+                  },
                   decoration: InputDecoration(labelText: "Category"),
                 ),
                 TextField(
@@ -75,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                   headers: {"Content-Type": "application/json"},
                   body: jsonEncode({
                     "name": nameController.text,
-                    "category": categoryController.text,
+                    "category": selectedCategory,
                     "amount": double.tryParse(amountController.text) ?? 0.0,
                   }),
                 );
@@ -107,11 +130,70 @@ class _HomePageState extends State<HomePage> {
         children: [
           const SizedBox(height: 20),
           Expanded(
-            child: PieChartWidget(expenseData: expenseData,monthlyBudget: monthlyBudget, totalExpenses: totalExpenses,),
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0, end: totalExpenses / monthlyBudget),
+                      duration: const Duration(seconds: 1),
+                      builder: (context, value, child) {
+                        return CircularProgressIndicator(
+                          value: value,
+                          strokeWidth: 30,
+                          color: Colors.green,
+                          backgroundColor: Colors.white,
+                          strokeCap: StrokeCap.round,
+                        );
+                      },
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          "₹$totalExpenses",
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          "₹$monthlyBudget",
+                          style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top: 30, left: 30, right: 30),
+              padding: const EdgeInsets.only(top: 0, left: 30, right: 30),
               child: Whitespace(
                 finalcategoryname: "",
                 finalexpense: 0.0,

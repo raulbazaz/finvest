@@ -15,11 +15,8 @@ class _CustomNavBarState extends State<CustomNavBar> {
   final List<Widget> _pages = [
     HomePage(),
     AskFinvestChatbot(),
-    Stocks(),
-    Wallet(
-      totalbalance: 100000,
-      totalexpenses: 15000,
-    ),
+    StockInfoPage(),
+    Wallet(),
   ];
 
   void _onItemTapped(int index) {
