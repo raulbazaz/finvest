@@ -33,7 +33,7 @@ Future<void> _fetchInvestmentSuggestions() async {
   final response = await http.post(
     Uri.parse('http://10.0.2.2:5002/investment-suggestions'), // Change 127.0.0.1 to 10.0.2.2 to actually connect to local host and not emulator local host
     headers: {'Content-Type': 'application/json'},
-    body: json.encode({'tickers': ['AAPL', 'GOOGL', 'MSFT','RBLX','PINS','FTNT','ELF','NET','TTWO','EXPE','NKLA','NKE','GPRO']}),
+    body: json.encode({'tickers': ['AAPL', 'GOOGL', 'MSFT','RBLX','PINS','FTNT','NET','TTWO','EXPE','NKE','GPRO']}),
   );
 
   if (response.statusCode == 200) {
@@ -55,6 +55,7 @@ Future<void> _fetchInvestmentSuggestions() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: CustomAppbar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -64,16 +65,16 @@ Future<void> _fetchInvestmentSuggestions() async {
               if (stockInfo.isNotEmpty)
                 ...stockInfo.entries.map((entry) {
                   return ListTile(
-                    title: Text(entry.value['name']),
-                    subtitle: Text('Price: \$${entry.value['current_price']}'),
+                    title: Text(entry.value['name'],style: TextStyle(color: Colors.white, fontSize: 18),),
+                    subtitle: Text('Price: \$${entry.value['current_price']}',style: TextStyle(color: Colors.blue.shade700),),
                   );
                 }).toList(),
               SizedBox(height: 20),
               if (investmentSuggestions.isNotEmpty)
                 ...investmentSuggestions.entries.map((entry) {
                   return ListTile(
-                    title: Text(entry.value['suggestion']),
-                    subtitle: Text('${entry.key}: ${entry.value['percentage_change'].toStringAsFixed(2)}%'),
+                    title: Text(entry.value['suggestion'], style: TextStyle(color: Colors.white),),
+                    subtitle: Text('${entry.key}: ${entry.value['percentage_change'].toStringAsFixed(2)}%', style: TextStyle(color: entry.value['percentage_change'] >5?  Colors.green[600]:Colors.red[600])),
                   );
                 }).toList(),
             ],

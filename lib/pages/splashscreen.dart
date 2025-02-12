@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
 class Splashscreen extends StatelessWidget {
-  void nextbuttonfunction() {} //write next button function here
+  void nextbuttonfunction(context) {
+    Navigator.pushNamed(context, '/navbar');
+  }
   const Splashscreen({super.key});
 
   @override
@@ -56,7 +58,9 @@ class Splashscreen extends StatelessWidget {
           ),
           Center(
               child: NextButton(
-            nextbuttonfunc: nextbuttonfunction,
+            nextbuttonfunc: (){
+              nextbuttonfunction(context);
+            },
           ))
         ],
       ),

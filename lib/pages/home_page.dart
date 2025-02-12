@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void fetchSummary() async {
-    final url = Uri.parse("http://localhost:5002/summary");
+    final url = Uri.parse("http://10.0.2.2:5002/summary");
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
